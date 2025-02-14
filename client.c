@@ -36,7 +36,7 @@ typedef enum RequestType {
 } RequestType;
 
 RequestType get_user_request();
-void get_text_input(char* buffer, size_t buffer_size);
+void get_text_input(char* buffer, size_t buffer_size, FILE* input_file);
 int connect_to_host(char *hostname, char *port);
 void main_loop();
 
@@ -50,16 +50,25 @@ int main() {
  * function to handle the selection.
  */
 void main_loop() {
-	int server_fd = connect_to_host("hopper.sandiego.edu", "FIXME"); // I hope this is the right place for this...
+	int server_fd = connect_to_host("hopper.sandiego.edu", "FIXME"); // @fixme No idea if this is the right place for this
 
-	while (true) {
+	bool done = false;
+	while (!done) {
 		RequestType selection = get_user_request();
 
 		switch (selection) {
-			case 1:
+			case TEMPERATURE:
 				// TODO: Handle case one by calling a function you write
 				break;
-			// TODO: add cases for other menu options
+			case HUMIDITY:
+				// TODO: Handle case one by calling a function you write
+				break;
+			case WIND_SPEED:
+				// TODO: Handle case one by calling a function you write
+				break;
+			case QUIT:
+				done = true;
+				break;
 			default:
 				fprintf(stderr, "ERROR: Invalid selection\n");
 				break;
@@ -79,7 +88,7 @@ RequestType get_user_request() {
 
 	// Read in a value from standard input
 	char input[10];
-    get_text_input(input, 10);
+    get_text_input(input, 10, stdin);
 
     // get rid of newline, if there is one
 	char *new_line = strchr(input, '\n');
@@ -90,10 +99,16 @@ RequestType get_user_request() {
 	long selection = strtol(input, &end, 10);
 
 	if (end == input || *end != '\0') {
+		// input was not an integer
 		return INVALID;
 	}
-
-	return selection;
+	else if (selection < 1 || selection > 4) {
+		// input wasn't in the valid range
+		return INVALID;
+	}
+	else {
+		return selection;
+	}
 }
 
 /**
@@ -101,20 +116,18 @@ RequestType get_user_request() {
  * 
  * @param buffer The place where input will be stores
  * @param buffer_size The size (in bytes) of the buffer
+ * @param input_file The input source
  */
-void get_text_input(char* buffer, size_t buffer_size) {
+void get_text_input(char* buffer, size_t buffer_size, FILE* input_file) {
     memset(buffer, 0, buffer_size); // set all characters in input to '\0' (i.e. nul)
-    char *read_str = fgets(buffer, buffer_size, stdin);
+    char *read_str = fgets(buffer, buffer_size, input_file);
 
     // Check if EOF or an error, exiting the program in both cases.
-    if (read_str == NULL)
-    {
-        if (feof(stdin))
-        {
+    if (read_str == NULL) {
+        if (feof(input_file)) {
             exit(0);
         }
-        else if (ferror(stdin))
-        {
+        else if (ferror(input_file)) {
             perror("fgets");
             exit(1);
         }

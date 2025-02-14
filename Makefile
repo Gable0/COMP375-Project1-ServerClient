@@ -5,7 +5,7 @@ TARGET = client
 
 all: $(TARGET)
 
-client: client.c
+client: client.c io_helpers.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:

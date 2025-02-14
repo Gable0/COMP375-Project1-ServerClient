@@ -37,7 +37,6 @@ typedef enum RequestType {
 } RequestType;
 
 RequestType get_user_request();
-
 void main_loop();
 
 int main() {
@@ -45,12 +44,14 @@ int main() {
 	return 0;
 }
 
+void handle_request(RequestType request, int server_socket);
+
 /**
  * Loop to keep asking user what they want to do and calling the appropriate
  * function to handle the selection.
  */
 void main_loop() {
-	int server_fd = connect_to_host("hopper.sandiego.edu", "FIXME"); // @fixme No idea if this is the right place for this
+	int server_fd = connect_to_host("hopper.sandiego.edu", "FIXME"); // @todo Move this to a more appropriate place?
 
 	bool done = false;
 	while (!done) {
@@ -58,13 +59,9 @@ void main_loop() {
 
 		switch (selection) {
 			case TEMPERATURE:
-				// TODO: Handle case one by calling a function you write
-				break;
 			case HUMIDITY:
-				// TODO: Handle case one by calling a function you write
-				break;
 			case WIND_SPEED:
-				// TODO: Handle case one by calling a function you write
+				handle_request(selection, -1); // @todo: fix the second parameter
 				break;
 			case QUIT:
 				done = true;
@@ -75,7 +72,7 @@ void main_loop() {
 		}
 	}
 
-	close(server_fd);
+	close(server_fd); // @todo Move this to a more appropriate place?
 }
 
 /** 
@@ -84,7 +81,7 @@ void main_loop() {
  * @return The user's desired selection, or -1 if invalid selection.
  */
 RequestType get_user_request() {
-	// TODO: add printfs to print out the options
+	// @todo add printfs to print out the options
 
 	// Read in a value from standard input
 	char input[10];
@@ -111,4 +108,34 @@ RequestType get_user_request() {
 	}
 }
 
+/**
+ * Talks to the server to get and display the requestion weather information.
+ * 
+ * @pre Request type is not QUIT or INVALID
+ * 
+ * @param request The type of info being requested
+ * @param server_socket The socket used for communicating with the server
+ */
+void handle_request(RequestType request, int server_socket) {
+	// @todo: add code here that should happen for all types of requests
 
+	switch (request) {
+		case TEMPERATURE:
+			// @todo: put any code specific to this case.
+			fprintf(stderr, "TEMPERATURE not implemented yet"); // @todo: remove this after you implement this case
+			break;
+		case HUMIDITY:
+			// @todo: put any code specific to this case.
+			fprintf(stderr, "HUMIDTY not implemented yet"); // @todo: remove this after you implement this case
+			break;
+		case WIND_SPEED:
+			// @todo: put any code specific to this case.
+			fprintf(stderr, "WIND SPEED not implemented yet"); // @todo: remove this after you implement this case
+			break;
+		default:
+			fprintf(stderr, "Invalid request type");
+			exit(1);
+	}
+
+	// @todo: add code here that should happen for all types of requests
+}

@@ -4,12 +4,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <netdb.h>
-//#include <errno.h>
-//#include <limits.h>
-//#include <stdarg.h>
-//#include <arpa/inet.h>
-//#include <unistd.h>
-//#include <time.h>
 
 #include "io_helpers.h"
 

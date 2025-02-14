@@ -36,6 +36,7 @@ typedef enum RequestType {
 } RequestType;
 
 RequestType prompt();
+void get_text_input(char* buffer, size_t buffer_size);
 int connect_to_host(char *hostname, char *port);
 void main_loop();
 
@@ -78,21 +79,9 @@ RequestType prompt() {
 
 	// Read in a value from standard input
 	char input[10];
-	memset(input, 0, 10); // set all characters in input to '\0' (i.e. nul)
-	char *read_str = fgets(input, 10, stdin);
+    get_text_input(input, 10);
 
-	// Check if EOF or an error, exiting the program in both cases.
-	if (read_str == NULL) {
-		if (feof(stdin)) {
-			exit(0);
-		}
-		else if (ferror(stdin)) {
-			perror("fgets");
-			exit(1);
-		}
-	}
-
-	// get rid of newline, if there is one
+    // get rid of newline, if there is one
 	char *new_line = strchr(input, '\n');
 	if (new_line != NULL) new_line[0] = '\0';
 
@@ -105,6 +94,31 @@ RequestType prompt() {
 	}
 
 	return selection;
+}
+
+/**
+ * Reads input into the specified buffer, doing error checking alone the way.
+ * 
+ * @param buffer The place where input will be stores
+ * @param buffer_size The size (in bytes) of the buffer
+ */
+void get_text_input(char* buffer, size_t buffer_size) {
+    memset(buffer, 0, buffer_size); // set all characters in input to '\0' (i.e. nul)
+    char *read_str = fgets(buffer, buffer_size, stdin);
+
+    // Check if EOF or an error, exiting the program in both cases.
+    if (read_str == NULL)
+    {
+        if (feof(stdin))
+        {
+            exit(0);
+        }
+        else if (ferror(stdin))
+        {
+            perror("fgets");
+            exit(1);
+        }
+    }
 }
 
 /**

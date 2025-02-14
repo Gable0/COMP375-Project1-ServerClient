@@ -124,18 +124,18 @@ void handle_request(RequestType request, int server_socket) {
 	switch (request) {
 		case TEMPERATURE:
 			// @todo: put any code specific to this case.
-			fprintf(stderr, "TEMPERATURE not implemented yet"); // @todo: remove this after you implement this case
+			fprintf(stderr, "TEMPERATURE not implemented yet\n"); // @todo: remove this after you implement this case
 			break;
 		case HUMIDITY:
 			// @todo: put any code specific to this case.
-			fprintf(stderr, "HUMIDTY not implemented yet"); // @todo: remove this after you implement this case
+			fprintf(stderr, "HUMIDTY not implemented yet\n"); // @todo: remove this after you implement this case
 			break;
 		case WIND_SPEED:
 			// @todo: put any code specific to this case.
-			fprintf(stderr, "WIND SPEED not implemented yet"); // @todo: remove this after you implement this case
+			fprintf(stderr, "WIND SPEED not implemented yet\n"); // @todo: remove this after you implement this case
 			break;
 		default:
-			fprintf(stderr, "Invalid request type");
+			fprintf(stderr, "Invalid request type\n");
 			exit(1);
 	}
 

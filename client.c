@@ -36,15 +36,17 @@ typedef enum RequestType {
 	INVALID
 } RequestType;
 
+// forward declarations (yay for archaic C rules)
 RequestType get_user_request();
+void handle_request(RequestType request, int server_socket);
 void main_loop();
+
 
 int main() {
 	main_loop();
 	return 0;
 }
 
-void handle_request(RequestType request, int server_socket);
 
 /**
  * Loop to keep asking user what they want to do and calling the appropriate

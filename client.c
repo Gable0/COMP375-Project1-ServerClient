@@ -35,7 +35,7 @@ typedef enum RequestType {
 	INVALID
 } RequestType;
 
-RequestType prompt();
+RequestType get_user_request();
 void get_text_input(char* buffer, size_t buffer_size);
 int connect_to_host(char *hostname, char *port);
 void main_loop();
@@ -53,7 +53,7 @@ void main_loop() {
 	int server_fd = connect_to_host("hopper.sandiego.edu", "FIXME"); // I hope this is the right place for this...
 
 	while (true) {
-		RequestType selection = prompt();
+		RequestType selection = get_user_request();
 
 		switch (selection) {
 			case 1:
@@ -74,7 +74,7 @@ void main_loop() {
  *
  * @return The user's desired selection, or -1 if invalid selection.
  */
-RequestType prompt() {
+RequestType get_user_request() {
 	// TODO: add printfs to print out the options
 
 	// Read in a value from standard input

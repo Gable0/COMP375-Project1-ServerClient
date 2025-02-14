@@ -13,13 +13,6 @@
 
 #include "io_helpers.h"
 
-/**
- * Reads input into the specified buffer, doing error checking alone the way.
- * 
- * @param buffer The place where input will be stores
- * @param buffer_size The size (in bytes) of the buffer
- * @param input_file The input source
- */
 void get_text_input(char* buffer, size_t buffer_size, FILE* input_file) {
     memset(buffer, 0, buffer_size); // set all characters in input to '\0' (i.e. nul)
     char *read_str = fgets(buffer, buffer_size, input_file);
@@ -36,13 +29,6 @@ void get_text_input(char* buffer, size_t buffer_size, FILE* input_file) {
     }
 }
 
-/**
- * Socket implementation of connecting to a host at a specific port.
- *
- * @param hostname The name of the host to connect to (e.g. "foo.sandiego.edu")
- * @param port The port number to connect to
- * @return File descriptor of new socket to use.
- */
 int connect_to_host(char *hostname, char *port) {
 	// Step 1: fill in the address info in preparation for setting 
 	//   up the socket

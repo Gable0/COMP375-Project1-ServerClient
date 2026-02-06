@@ -1,5 +1,7 @@
 .nfs*
 *.swp
+.vscode
+.github
 
 *.o
 *.dSYM

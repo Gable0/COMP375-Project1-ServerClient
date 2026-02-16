@@ -41,8 +41,17 @@ typedef enum RequestType {
 RequestType get_user_request();
 void handle_request(RequestType request);
 void main_loop();
+int get_server_info(char *hostname, int *port, char *password);
+int authenticate_weather_server(char *hostname, int port, char *password);
+void get_and_display_sensor_data(int weather_fd, RequestType request);
+void close_weather_connection(int weather_fd);
 
 
+/**
+ * Main function.
+ *
+ * @return Exit status
+ */
 int main() {
 	main_loop();
 	return 0;
@@ -73,6 +82,7 @@ void main_loop() {
 				break;
 		}
 	}
+	printf("GOODBYE!\n");
 }
 
 /** 
@@ -116,47 +126,61 @@ RequestType get_user_request() {
 }
 
 /**
- * Talks to the server to get and display the requestion weather information.
- * 
- * @pre Request type is not QUIT or INVALID
- * 
- * @param request The type of info being requested
- * @param server_socket The socket used for communicating with the server
+ * Get the weather server info from hopper.
+ *
+ * @param hostname Where to store the hostname
+ * @param port Where to store the port
+ * @param password Where to store the password
+ * @return 0 if success, -1 if error
  */
-void handle_request(RequestType request) {
-	// @todo: add code here that should happen for all types of requests
-
+int get_server_info(char *hostname, int *port, char *password) {
 	//connecting to hopper/sending the auth message
-	int server_fd = connect_to_host("hopper.sandiego.edu", "7030"); // connect to hopper
+	int hopper_fd = connect_to_host("hopper.sandiego.edu", "7030"); // connect to hopper
 
 	//make sure the connection was made (GIVEN BY CUSTOM GEM MODEL)
-	if (server_fd < 0) {
+	if (hopper_fd < 0) {
 		fprintf(stderr, "Failed to connect to hopper.sandiego.edu\n");
-		return; // Exit handle_request early
+		return -1; // Exit handle_request early
 }
 
 	char message[BUFF_SIZE]; //make the user input 
 	memset(message, 0, BUFF_SIZE); //reset the user input with all 0's
 	strcpy(message, "AUTH password123\n");
-	send(server_fd, message, strlen(message), 0); //send the auth message
+	if (send(hopper_fd, message, strlen(message), 0) < 0) {
+		close(hopper_fd);
+		return -1;
+	}
 
 	//receving the message from hopper
 	char response[BUFF_SIZE];
 	memset(response, 0, BUFF_SIZE);
-	char hostname[256];
-	int port; 
-	char password[256];
 
 	//(GOT FROM CUSTOM GEM MODEL) makes sure that there is a null terminator at the end so the sscan doesn't bug
-	int bytes = recv(server_fd, response, BUFF_SIZE - 1, 0); 
-	if (bytes > 0) {
-		response[bytes] = '\0'; // force a null terminator at the end of what was received
+	int bytes = recv(hopper_fd, response, BUFF_SIZE - 1, 0); 
+	if (bytes <= 0) {
+		close(hopper_fd);
+		return -1;
+	}
+	response[bytes] = '\0'; // force a null terminator at the end of what was received
+
+	if (sscanf(response, "CONNECT %s %d %s", hostname, port, password) != 3) {
+		close(hopper_fd);
+		return -1;
 	}
 
-	sscanf(response, "CONNECT %s %d %s", hostname, &port, password); //parse through the response to find the port number
+	close(hopper_fd); //close the connection with hopper
+	return 0;
+}
 
-	close(server_fd); //close the connection with hopper
-
+/**
+ * Connect to weather server and authenticate.
+ *
+ * @param hostname Weather server hostname
+ * @param port Weather server port
+ * @param password Password to use
+ * @return Socket fd if success, -1 if error
+ */
+int authenticate_weather_server(char *hostname, int port, char *password) {
 	//connecting to the weather server
 	char port_str[10]; 
 	sprintf(port_str, "%d", port); //convert the int port to a string (GOT THIS FROM CUSTOM GEM MODEL)
@@ -166,20 +190,35 @@ void handle_request(RequestType request) {
 	//make sure the connection was made (GIVEN BY CUSTOM GEM MODEL)
 	if (weather_fd < 0) {
 		fprintf(stderr, "Failed to connect to weather station\n");
-		return; // Exit handle_request early
+		return -1; // Exit handle_request early
 	}
 
 	char auth_msg[BUFF_SIZE];
 	sprintf(auth_msg, "AUTH %s\n", password); //put the password variable from the response, and put it in auth_msg
 
-	send(weather_fd, auth_msg, strlen(auth_msg), 0); //send the auth message to the weatherstation server with the password from the hopper response 
+	if (send(weather_fd, auth_msg, strlen(auth_msg), 0) < 0) {
+		close(weather_fd);
+		return -1;
+	}
 
 	char weather_auth_response[BUFF_SIZE];
 	int weather_bytes = recv(weather_fd, weather_auth_response, BUFF_SIZE - 1, 0); //listen for the SUCCESS\n or not message from the server
-	if (weather_bytes > 0) {
-		weather_auth_response[weather_bytes] = '\0'; // force a null terminator at the end of what was received 
+	if (weather_bytes <= 0) {
+		close(weather_fd);
+		return -1;
 	}
+	weather_auth_response[weather_bytes] = '\0'; // force a null terminator at the end of what was received 
 
+	return weather_fd;
+}
+
+/**
+ * Send query and display sensor data.
+ *
+ * @param weather_fd Socket for weather server
+ * @param request Type of sensor data to get
+ */
+void get_and_display_sensor_data(int weather_fd, RequestType request) {
 	//setting user query (THIS IS WHERE YOU LEFT OFF, YOU NEED TO PUT QUERY IN EACH OF THE SWITCH STATEMENTS NOW)
 	char *query = NULL;
 
@@ -204,6 +243,7 @@ void handle_request(RequestType request) {
 	if (query != NULL) {
     send(weather_fd, query, strlen(query), 0);
 
+    char response[BUFF_SIZE];
     memset(response, 0, BUFF_SIZE);
 
     int data_bytes = recv(weather_fd, response, BUFF_SIZE - 1, 0);
@@ -231,7 +271,14 @@ void handle_request(RequestType request) {
 
     printf("The last %s reading was %d %s, taken at %s\n", sensor_name, value, unit, time_str);
 }
+}
 
+/**
+ * Close connection to weather server.
+ *
+ * @param weather_fd Socket for weather server
+ */
+void close_weather_connection(int weather_fd) {
 //sending the close message to the server
 send(weather_fd, "CLOSE\n", strlen("CLOSE\n"), 0);
 
@@ -244,4 +291,31 @@ char weather_close_response[BUFF_SIZE];
 
 //closing the server connection
 close(weather_fd);	
+}
+
+/**
+ * Talks to the server to get and display the requested weather information.
+ * 
+ * @pre Request type is not QUIT or INVALID
+ * 
+ * @param request The type of info being requested
+ */
+void handle_request(RequestType request) {
+	// @todo: add code here that should happen for all types of requests
+	char hostname[256];
+	int port; 
+	char password[256];
+
+	if (get_server_info(hostname, &port, password) < 0) {
+		return;
+	}
+
+	int weather_fd = authenticate_weather_server(hostname, port, password);
+	if (weather_fd < 0) {
+		return;
+	}
+
+	get_and_display_sensor_data(weather_fd, request);
+
+	close_weather_connection(weather_fd);
 }

@@ -1,18 +1,20 @@
 Project 1 (Reverse Engineering a Network App)
 COMP 375 (Computer Networks) @ USD
 
-1. Your full name: 
+1. Your full name: Gable Krich 
 
-2. Your USD email address: 
+2. Your USD email address: gkrich@sandiego.edu
 
 3. A typed copy of USD's academic integrity pledge, found on page 3 of 
    https://www.sandiego.edu/conduct/documents/HonorCode.pdf.
    To be clear, it is the text that starts, "I pledge to demonstrate...".
 
 4. Hours spent on project:
-	- Wireshark Analysis:
-	- C programming:
+	- Wireshark Analysis: 1 Hour
+	- C programming: 6 Hours
 
-5. Known bugs:
+5. Known bugs: N/A
 
 7. (Optional) Comments about the project:	
+This was really fun. I used AI to give me a path to follow so I did not get confused or lost in the instructions. I was able to use the diagram I made earlier 
+to find the pattern of the connections, and once I found the pattern, it was smooth sailing (with my random questions being answered by the Custom Gem Model). 
